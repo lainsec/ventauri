@@ -1,0 +1,74 @@
+{
+  "build": {
+    "distDir": "../dist",
+    "devPath": "https://discord.com/app",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "Ventauri",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "window": {
+        "all": true
+      },
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["https://*.discord.com/*", "https://*.githubusercontent.com/*", "https://*.github.com/*"]
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.ventauri.app",
+      "icon": [
+        "icons/icon.ico"
+      ],
+      "resources": [],
+      "externalBin": [],
+      "copyright": "Lainsec 2026",
+      "category": "DeveloperTool",
+      "shortDescription": "LightWeight Discord client built with Rust-lang using Tauri framework.",
+      "longDescription": "",
+      "deb": {
+        "depends": []
+      },
+      "macOS": {
+        "frameworks": [],
+        "minimumSystemVersion": "10.13",
+        "exceptionDomain": "",
+        "entitlements": null
+      },
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256"
+      }
+    },
+    "security": {
+      "csp": null,
+      "dangerousRemoteDomainIpcAccess": [
+        {
+          "domain": "discord.com",
+          "windows": ["main"]
+        }
+      ]
+    },
+    "updater": {
+      "active": false
+    },
+    "windows": [],
+    "systemTray": {
+      "iconPath": "icons/icon.ico",
+      "iconAsTemplate": false
+    }
+  }
+}
