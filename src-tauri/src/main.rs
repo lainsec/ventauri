@@ -122,58 +122,68 @@ fn main() {
 
             // Arraste de janela instantâneo (Event Listener precoce)
             let dragTimeout = null;
+            const titleBarXPath = '//*[@id="app-mount"]/div[2]/div/div[1]/div/div[2]/div/div/div/div[1]/div[2]';
 
             document.addEventListener('mousedown', (e) => {
                 if (e.button !== 0) return;
 
-                const observer = new MutationObserver(() => {
-                    const bar = document.querySelector('[class*="titleBar_"]');
+                // Verifica se o clique ocorreu dentro da área desejada (usando XPath)
+                try {
+                    const result = document.evaluate(
+                        titleBarXPath,
+                        document,
+                        null,
+                        XPathResult.FIRST_ORDERED_NODE_TYPE,
+                        null
+                    );
+                    const titleBar = result.singleNodeValue;
 
-                    if (bar) {
-                        bar.style.webkitAppRegion = "drag";
-                        console.log("Drag aplicado");
+                    if (!titleBar) return;
 
-                        observer.disconnect();
+                    // Verifica se o clique está dentro da titleBar
+                    if (!titleBar.contains(e.target)) {
+                        return; // Não está na área de arraste → ignora
                     }
-                });
 
-                observer.observe(document.body, {
-                    childList: true,
-                    subtree: true
-                });
+                    // Evita arrastar se clicar em elementos interativos dentro da titleBar
+                    const interactive = e.target.closest(`
+                        button,
+                        a,
+                        input,
+                        textarea,
+                        select,
+                        [role="button"],
+                        [role="tab"],
+                        [role="menuitem"],
+                        [class*="button"],
+                        [class*="icon"],
+                        [class*="close"],
+                        [class*="minimize"],
+                        [class*="maximize"]
+                    `);
 
-                const interactive = e.target.closest(`
-                    button,
-                    a,
-                    input,
-                    textarea,
-                    select,
-                    [role="button"],
-                    [role="tab"],
-                    [role="menuitem"],
-                    nav *,
-                    [class*="button"],
-                    [class*="tab"],
-                    [class*="link"]
-                `);
+                    if (interactive) return;
 
-                if (interactive) return;
+                    // Se chegou aqui → é clique válido na titleBar
+                    dragTimeout = setTimeout(async () => {
+                        try {
+                            await window.__TAURI__.invoke("start_drag");
+                        } catch (err) {
+                            console.error("Ventauri: Erro ao iniciar drag", err);
+                        }
+                    }, 100); // 100ms costuma dar sensação bem instantânea
 
-                dragTimeout = setTimeout(async () => {
-                    try {
-                        await window.__TAURI__.invoke("start_drag");
-                    } catch (err) {
-                        console.error(err);
-                    }
-                }, 120); // tempo pequeno = sensação instantânea
-            });
+                } catch (err) {
+                    console.error("Ventauri: Erro ao avaliar XPath de titlebar", err);
+                }
+            }, true); // capture phase
 
             document.addEventListener('mouseup', () => {
                 if (dragTimeout) {
                     clearTimeout(dragTimeout);
                     dragTimeout = null;
                 }
-            });
+            }, true);
 
             const xpath = '//*[@id="app-mount"]/div[2]/div/div[1]/div/div[2]/div/div/div/div[2]/div[1]/nav/ul/div/div/div[7]';
             
